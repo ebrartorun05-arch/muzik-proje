@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müzik Öneri Sistemi</title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🎵 Akıllı Müzik Öneri Sistemi</h1>
+
+    <select id="songSelect">
+
+        {% for song in songs %}
+
+        <option value="{{ song }}">
+            {{ song }}
+        </option>
+
+        {% endfor %}
+
+    </select>
+
+    <button onclick="getRecommendations()">
+        Benzer Şarkıları Bul
+    </button>
+
+    <div id="results"></div>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

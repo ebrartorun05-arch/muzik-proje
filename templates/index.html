@@ -1,42 +1,74 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Müzik Öneri Sistemi</title>
-
-    <link rel="stylesheet"
-    href="{{ url_for('static', filename='style.css') }}">
+    <title>Muzik Sistemi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-<div class="container">
+    <div class="overlay">
 
-    <h1>🎵 Akıllı Müzik Öneri Sistemi</h1>
+        <div class="login-box">
 
-    <select id="songSelect">
+            <h1>🎵 HOSGELDIN</h1>
 
-        {% for song in songs %}
+            <p>Muzik onerilerin hazir.</p>
 
-        <option value="{{ song }}">
-            {{ song }}
-        </option>
+            <div style="margin-top: 20px; text-align: center;">
+                <label for="song-select" style="color: white; display: block; margin-bottom: 10px;">Bir Şarkı Seçin:</label>
+                <select id="song-select" style="padding: 10px; width: 250px; border-radius: 5px; color: black;">
+                    {% for song in songs %}
+                        <option value="{{ song }}">{{ song }}</option>
+                    {% endfor %}
+                </select>
+                <button id="recommend-btn" style="padding: 10px 20px; margin-top: 10px; background-color: red; color: white; border: none; border-radius: 5px; cursor: pointer; display: inline-block;">Öneri Getir</button>
+            </div>
 
-        {% endfor %}
+            <div id="recommendations-box" style="margin-top: 20px; color: white; text-align: center;">
+                <h3 style="margin-bottom: 10px;">Önerilen Şarkılar:</h3>
+                <ul id="recommendations-list" style="list-style: none; padding: 0; font-weight: bold; line-height: 25px;"></ul>
+            </div>
 
-    </select>
+        </div>
 
-    <button onclick="getRecommendations()">
-        Benzer Şarkıları Bul
-    </button>
+    </div>
 
-    <div id="results"></div>
+    <script>
+        document.getElementById('recommend-btn').addEventListener('click', function() {
+            const selectedSong = document.getElementById('song-select').value;
+            const listContainer = document.getElementById('recommendations-list');
+            
+            // Listeyi temizle ve yükleniyor yaz
+            listContainer.innerHTML = "<li>Öneriler getiriliyor...</li>";
 
-</div>
-
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+            // Arka plandaki /recommend rotasına istek atıyoruz
+            fetch('/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ song: selectedSong })
+            })
+            .then(response => response.json())
+            .then(data => {
+                listContainer.innerHTML = ""; // Yükleniyor yazısını sil
+                
+                // Gelen 5 şarkıyı listeye ekle
+                data.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `🎵 <span style="color: #ff4757;">${item.track_name}</span> - ${item.artist}`;
+                    listContainer.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error('Hata:', error);
+                listContainer.innerHTML = "<li>Öneri alınırken bir hata oluştu.</li>";
+            });
+        });
+    </script>
 
 </body>
+
 </html>

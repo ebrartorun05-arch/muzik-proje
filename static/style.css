@@ -1,41 +1,154 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
 body{
-    background:#121212;
-    color:white;
-    font-family:Arial;
-    display:flex;
-    justify-content:center;
-    padding-top:50px;
+
+    font-family:Arial, sans-serif;
+
+    height:100vh;
+
+    background-size:cover;
+    background-position:center;
+
+    animation:bgChange 15s infinite;
 }
 
-.container{
-    width:700px;
-    text-align:center;
+/* Degisen arkaplan */
+
+@keyframes bgChange{
+
+    0%{
+        background-image:url("/static/bg1.jpg");
+    }
+
+    33%{
+        background-image:url("/static/bg2.jpg");
+    }
+
+    66%{
+        background-image:url("/static/bg3.jpg");
+    }
+
+    100%{
+        background-image:url("/static/bg1.jpg");
+    }
 }
 
-h1{
-    margin-bottom:30px;
-}
+/* Siyah blur katman */
 
-select{
+.overlay{
+
     width:100%;
-    padding:15px;
-    border-radius:10px;
-    margin-bottom:20px;
+    height:100vh;
+
+    background:rgba(0,0,0,0.75);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
 }
+
+/* Login kutusu */
+
+.login-box{
+
+    width:400px;
+
+    padding:40px;
+
+    border-radius:20px;
+
+    background:rgba(15,15,15,0.85);
+
+    border:2px solid red;
+
+    backdrop-filter:blur(10px);
+
+    box-shadow:0 0 30px red;
+
+    text-align:center;
+
+    color:white;
+}
+
+/* Baslik */
+
+.login-box h1{
+
+    font-size:40px;
+
+    margin-bottom:25px;
+
+    color:red;
+}
+
+/* Inputlar */
+
+input{
+
+    width:100%;
+
+    padding:14px;
+
+    margin-top:15px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#1e1e1e;
+
+    color:white;
+
+    font-size:15px;
+
+    outline:none;
+}
+
+/* Buton */
 
 button{
-    background:#1db954;
-    color:white;
+
+    width:100%;
+
+    padding:14px;
+
+    margin-top:25px;
+
     border:none;
-    padding:15px 30px;
+
     border-radius:10px;
+
+    background:red;
+
+    color:white;
+
+    font-size:17px;
+
     cursor:pointer;
-    font-size:16px;
+
+    transition:0.3s;
 }
 
-.song-card{
-    background:#1e1e1e;
+button:hover{
+
+    background:#cc0000;
+
+    transform:scale(1.03);
+
+    box-shadow:0 0 20px red;
+}
+
+/* Yazilar */
+
+p{
+
     margin-top:15px;
-    padding:20px;
-    border-radius:10px;
+
+    color:#ccc;
 }

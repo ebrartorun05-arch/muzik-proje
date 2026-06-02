@@ -5,12 +5,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 
 app = Flask(__name__)
- 
+
 # =========================
 # VERİTABANI
 # =========================
 conn = sqlite3.connect("users.db", check_same_thread=False)
 cursor = conn.cursor()
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS users(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,7 +19,9 @@ CREATE TABLE IF NOT EXISTS users(
     password TEXT
 )
 """)
+
 conn.commit()
+
 
 # =========================
 # CSV YÜKLE
@@ -109,6 +112,7 @@ def recommend():
     ).head(5)
 
     result = []
+
     for _, row in recommendations.iterrows():
         result.append({
             "track_name": row["track_name"],
@@ -121,4 +125,46 @@ def recommend():
 # ÇALIŞTIR
 # =========================
 if __name__ == "__main__":
+    app.run(debug=True)
+    
+
+
+
+
+from flask import Flask, render_template
+from flask_sqlalchemy import SQLAlchemy
+import os
+
+app = Flask(_name_)
+
+# Veritabanı dosyasının kaydedileceği yolu belirliyoruz
+# Proje klasörünün içinde 'veritabanı.db' adında bir dosya oluşturur
+BASE_DIR = os.path.abspath(os.path.dirname(_file_))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'veritabanı.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Veritabanı nesnesini başlatıyoruz
+db = SQLAlchemy(app)
+
+# Örnek bir Veritabanı Tablosu (Modeli)
+class Kullanici(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    isim = db.Column(db.String(50), nullable=False)
+    eposta = db.Column(db.String(100), unique=True, nullable=False)
+
+    def _repr_(self):
+        return f'<Kullanici {self.isim}>'
+
+@app.route('/')
+def ana_sayfa():
+    # Test amaçlı veritabanından tüm kullanıcıları çekelim
+    # (İlk başta boş dönecektir)
+    kullanicilar = Kullanici.query.all()
+    return f"Veritabanı bağlantısı başarılı! Toplam kullanıcı sayısı: {len(kullanicilar)}"
+
+if _name_ == '_main_':
+    # Veritabanı tabloları eğer yoksa otomatik olarak oluşturulur
+    with app.app_context():
+        db.create_all()
+        
     app.run(debug=True)

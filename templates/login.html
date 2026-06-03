@@ -20,22 +20,48 @@
 
         <p>Hosgeldin</p>
 
+        <!-- GIRIS FORMU -->
         <form method="POST">
 
             <input
             type="email"
             name="email"
-            placeholder="Email">
+            placeholder="Email"
+            required>
 
             <input
             type="password"
             name="password"
-            placeholder="Sifre">
+            placeholder="Sifre"
+            required>
 
             <button type="submit">
-
                 Giris Yap
+            </button>
 
+        </form>
+
+        <hr style="margin:25px 0; border:1px solid #333;">
+
+        <p>Hesabin yok mu?</p>
+
+        <!-- KAYIT FORMU -->
+        <form action="/register" method="POST">
+
+            <input
+            type="email"
+            name="email"
+            placeholder="Yeni Email"
+            required>
+
+            <input
+            type="password"
+            name="password"
+            placeholder="Yeni Sifre"
+            required>
+
+            <button type="submit">
+                Kayit Ol
             </button>
 
         </form>

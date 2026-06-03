@@ -15,13 +15,12 @@ cursor = conn.cursor()
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS users(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT,
+    email TEXT UNIQUE,
     password TEXT
 )
 """)
 
 conn.commit()
-
 
 # =========================
 # CSV YÜKLE
@@ -41,44 +40,106 @@ feature_cols = [
     'tempo'
 ]
 
-# Sayısal veriye çevir
 for col in feature_cols:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
 df = df.dropna(subset=feature_cols)
 
-# Ölçekleme
 scaler = MinMaxScaler()
 df_scaled = scaler.fit_transform(df[feature_cols])
 
 # =========================
-# GİRİŞ (LOGIN) SAYFASI
+# GİRİŞ SAYFASI
 # =========================
 @app.route("/", methods=["GET", "POST"])
 def login():
+
     if request.method == "POST":
+
         email = request.form["email"]
         password = request.form["password"]
 
-        # Veritabanına kaydet
         cursor.execute(
-            "INSERT INTO users(email, password) VALUES(?,?)",
+            "SELECT * FROM users WHERE email=? AND password=?",
             (email, password)
         )
-        conn.commit()
 
-        return redirect("/home")
+        user = cursor.fetchone()
+
+        if user:
+            return redirect("/home")
+
+        return "Email veya sifre hatali"
 
     return render_template("login.html")
 
 # =========================
-# ANA SAYFA (MÜZİK PANELİ)
+# KAYIT OL
+# =========================
+@app.route("/register", methods=["POST"])
+def register():
+
+    email = request.form["email"]
+    password = request.form["password"]
+
+    cursor.execute(
+        "SELECT * FROM users WHERE email=?",
+        (email,)
+    )
+
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        return "Bu email zaten kayitli"
+
+    cursor.execute(
+        "INSERT INTO users(email, password) VALUES(?, ?)",
+        (email, password)
+    )
+
+    conn.commit()
+
+    return redirect("/")
+
+# =========================
+# KULLANICILARI GÖR
+# =========================
+@app.route("/users")
+def users():
+
+    cursor.execute(
+        "SELECT id, email FROM users"
+    )
+
+    users = cursor.fetchall()
+
+    html = """
+    <h1>Kayitli Kullanicilar</h1>
+    <hr>
+    """
+
+    for user in users:
+
+        html += f"""
+        <p>
+        ID: {user[0]} <br>
+        Email: {user[1]}
+        </p>
+        <hr>
+        """
+
+    return html
+
+# =========================
+# ANA SAYFA
 # =========================
 @app.route("/home")
 def home():
+
     songs = sorted(
         df['track_name'].astype(str).unique()
     )
+
     return render_template(
         "index.html",
         songs=songs
@@ -89,6 +150,7 @@ def home():
 # =========================
 @app.route("/recommend", methods=["POST"])
 def recommend():
+
     selected_song = request.json["song"]
 
     idx = df[
@@ -107,13 +169,14 @@ def recommend():
     recommendations = df[
         df['track_name'] != selected_song
     ].sort_values(
-        'similarity',
+        "similarity",
         ascending=False
     ).head(5)
 
     result = []
 
     for _, row in recommendations.iterrows():
+
         result.append({
             "track_name": row["track_name"],
             "artist": row["artists"]
@@ -125,46 +188,4 @@ def recommend():
 # ÇALIŞTIR
 # =========================
 if __name__ == "__main__":
-    app.run(debug=True)
-    
-
-
-
-
-from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
-import os
-
-app = Flask(_name_)
-
-# Veritabanı dosyasının kaydedileceği yolu belirliyoruz
-# Proje klasörünün içinde 'veritabanı.db' adında bir dosya oluşturur
-BASE_DIR = os.path.abspath(os.path.dirname(_file_))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'veritabanı.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Veritabanı nesnesini başlatıyoruz
-db = SQLAlchemy(app)
-
-# Örnek bir Veritabanı Tablosu (Modeli)
-class Kullanici(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    isim = db.Column(db.String(50), nullable=False)
-    eposta = db.Column(db.String(100), unique=True, nullable=False)
-
-    def _repr_(self):
-        return f'<Kullanici {self.isim}>'
-
-@app.route('/')
-def ana_sayfa():
-    # Test amaçlı veritabanından tüm kullanıcıları çekelim
-    # (İlk başta boş dönecektir)
-    kullanicilar = Kullanici.query.all()
-    return f"Veritabanı bağlantısı başarılı! Toplam kullanıcı sayısı: {len(kullanicilar)}"
-
-if _name_ == '_main_':
-    # Veritabanı tabloları eğer yoksa otomatik olarak oluşturulur
-    with app.app_context():
-        db.create_all()
-        
     app.run(debug=True)
